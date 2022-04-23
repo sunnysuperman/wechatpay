@@ -32,8 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 在原有CertificatesVerifier基础上，增加自动更新证书功能
- * 该类已废弃，请使用CertificatesManager
+ * 在原有CertificatesVerifier基础上，增加自动更新证书功能 该类已废弃，请使用CertificatesManager
  *
  * @author xy-peng
  */
@@ -66,7 +65,7 @@ public class AutoUpdateCertificatesVerifier implements Verifier {
         this.credentials = credentials;
         this.apiV3Key = apiV3Key;
         this.minutesInterval = minutesInterval;
-        //构造时更新证书
+        // 构造时更新证书
         try {
             autoUpdateCert();
             lastUpdateTime = Instant.now();
@@ -77,12 +76,11 @@ public class AutoUpdateCertificatesVerifier implements Verifier {
 
     @Override
     public boolean verify(String serialNumber, byte[] message, String signature) {
-        if (lastUpdateTime == null
-                || Duration.between(lastUpdateTime, Instant.now()).toMinutes() >= minutesInterval) {
+        if (lastUpdateTime == null || Duration.between(lastUpdateTime, Instant.now()).toMinutes() >= minutesInterval) {
             if (lock.tryLock()) {
                 try {
                     autoUpdateCert();
-                    //更新时间
+                    // 更新时间
                     lastUpdateTime = Instant.now();
                 } catch (GeneralSecurityException | IOException e) {
                     log.warn("Auto update cert failed: ", e);
@@ -100,10 +98,8 @@ public class AutoUpdateCertificatesVerifier implements Verifier {
     }
 
     protected void autoUpdateCert() throws IOException, GeneralSecurityException {
-        try (CloseableHttpClient httpClient = WechatPayHttpClientBuilder.create()
-                .withCredentials(credentials)
-                .withValidator(verifier == null ? (response) -> true : new WechatPay2Validator(verifier))
-                .build()) {
+        try (CloseableHttpClient httpClient = WechatPayHttpClientBuilder.create().withCredentials(credentials)
+                .withValidator(verifier == null ? (response) -> true : new WechatPay2Validator(verifier)).build()) {
 
             HttpGet httpGet = new HttpGet(CERT_DOWNLOAD_PATH);
             httpGet.addHeader(ACCEPT, APPLICATION_JSON.toString());
@@ -134,18 +130,15 @@ public class AutoUpdateCertificatesVerifier implements Verifier {
         if (dataNode != null) {
             for (int i = 0, count = dataNode.size(); i < count; i++) {
                 JsonNode node = dataNode.get(i).get("encrypt_certificate");
-                //解密
+                // 解密
                 String cert = aesUtil.decryptToString(
-                        node.get("associated_data").toString().replace("\"", "")
-                                .getBytes(StandardCharsets.UTF_8),
-                        node.get("nonce").toString().replace("\"", "")
-                                .getBytes(StandardCharsets.UTF_8),
+                        node.get("associated_data").toString().replace("\"", "").getBytes(StandardCharsets.UTF_8),
+                        node.get("nonce").toString().replace("\"", "").getBytes(StandardCharsets.UTF_8),
                         node.get("ciphertext").toString().replace("\"", ""));
 
                 CertificateFactory cf = CertificateFactory.getInstance("X509");
-                X509Certificate x509Cert = (X509Certificate) cf.generateCertificate(
-                        new ByteArrayInputStream(cert.getBytes(StandardCharsets.UTF_8))
-                );
+                X509Certificate x509Cert = (X509Certificate) cf
+                        .generateCertificate(new ByteArrayInputStream(cert.getBytes(StandardCharsets.UTF_8)));
                 try {
                     x509Cert.checkValidity();
                 } catch (CertificateExpiredException | CertificateNotYetValidException e) {

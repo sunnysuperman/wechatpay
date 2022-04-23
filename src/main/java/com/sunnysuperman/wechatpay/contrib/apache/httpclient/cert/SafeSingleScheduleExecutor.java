@@ -20,10 +20,8 @@ public class SafeSingleScheduleExecutor extends ScheduledThreadPoolExecutor {
         super.setMaximumPoolSize(MAXIMUM_POOL_SIZE);
     }
 
-
     @Override
-    public ScheduledFuture<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period,
-            TimeUnit unit) {
+    public ScheduledFuture<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit) {
         if (getQueue().size() < MAX_QUEUE_CAPACITY) {
             return super.scheduleAtFixedRate(command, initialDelay, period, unit);
         } else {

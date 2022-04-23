@@ -23,11 +23,15 @@ public class CertSerializeUtil {
     /**
      * 反序列化证书并解密
      *
-     * @param apiV3Key APIv3密钥
-     * @param body 下载证书的请求返回体
+     * @param apiV3Key
+     *            APIv3密钥
+     * @param body
+     *            下载证书的请求返回体
      * @return 证书list
-     * @throws GeneralSecurityException 当证书过期或尚未生效时
-     * @throws IOException 当body不合法时
+     * @throws GeneralSecurityException
+     *             当证书过期或尚未生效时
+     * @throws IOException
+     *             当body不合法时
      */
     public static Map<BigInteger, X509Certificate> deserializeToCerts(byte[] apiV3Key, String body)
             throws GeneralSecurityException, IOException {
@@ -38,18 +42,15 @@ public class CertSerializeUtil {
         if (dataNode != null) {
             for (int i = 0, count = dataNode.size(); i < count; i++) {
                 JsonNode node = dataNode.get(i).get("encrypt_certificate");
-                //解密
+                // 解密
                 String cert = aesUtil.decryptToString(
-                        node.get("associated_data").toString().replace("\"", "")
-                                .getBytes(StandardCharsets.UTF_8),
-                        node.get("nonce").toString().replace("\"", "")
-                                .getBytes(StandardCharsets.UTF_8),
+                        node.get("associated_data").toString().replace("\"", "").getBytes(StandardCharsets.UTF_8),
+                        node.get("nonce").toString().replace("\"", "").getBytes(StandardCharsets.UTF_8),
                         node.get("ciphertext").toString().replace("\"", ""));
 
                 CertificateFactory cf = CertificateFactory.getInstance("X509");
-                X509Certificate x509Cert = (X509Certificate) cf.generateCertificate(
-                        new ByteArrayInputStream(cert.getBytes(StandardCharsets.UTF_8))
-                );
+                X509Certificate x509Cert = (X509Certificate) cf
+                        .generateCertificate(new ByteArrayInputStream(cert.getBytes(StandardCharsets.UTF_8)));
                 try {
                     x509Cert.checkValidity();
                 } catch (CertificateExpiredException | CertificateNotYetValidException ignored) {

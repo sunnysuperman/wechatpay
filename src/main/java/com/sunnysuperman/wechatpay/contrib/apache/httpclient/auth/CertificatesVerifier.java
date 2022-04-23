@@ -31,7 +31,6 @@ public class CertificatesVerifier implements Verifier {
         this.certificates.putAll(certificates);
     }
 
-
     public void updateCertificates(Map<BigInteger, X509Certificate> certificates) {
         this.certificates.clear();
         this.certificates.putAll(certificates);
@@ -77,4 +76,3 @@ public class CertificatesVerifier implements Verifier {
         }
     }
 }
-

@@ -60,8 +60,7 @@ public class SignatureExec implements ClientExecChain {
     }
 
     private CloseableHttpResponse executeWithSignature(HttpRoute route, HttpRequestWrapper request,
-            HttpClientContext context,
-            HttpExecutionAware execAware) throws IOException, HttpException {
+            HttpClientContext context, HttpExecutionAware execAware) throws IOException, HttpException {
         // 上传类不需要消耗两次故不做转换
         if (!(request.getOriginal() instanceof WechatPayUploadHttpPost)) {
             convertToRepeatableRequestEntity(request);

@@ -61,11 +61,9 @@ public class WechatPay2Credentials implements Credentials {
 
         Signer.SignatureResult signature = signer.sign(message.getBytes(StandardCharsets.UTF_8));
 
-        String token = "mchid=\"" + getMerchantId() + "\","
-                + "nonce_str=\"" + nonceStr + "\","
-                + "timestamp=\"" + timestamp + "\","
-                + "serial_no=\"" + signature.certificateSerialNumber + "\","
-                + "signature=\"" + signature.sign + "\"";
+        String token = "mchid=\"" + getMerchantId() + "\"," + "nonce_str=\"" + nonceStr + "\"," + "timestamp=\""
+                + timestamp + "\"," + "serial_no=\"" + signature.certificateSerialNumber + "\"," + "signature=\""
+                + signature.sign + "\"";
         log.debug("authorization token=[{}]", token);
 
         return token;
@@ -86,10 +84,7 @@ public class WechatPay2Credentials implements Credentials {
             body = EntityUtils.toString(((HttpEntityEnclosingRequest) request).getEntity(), StandardCharsets.UTF_8);
         }
 
-        return request.getRequestLine().getMethod() + "\n"
-                + canonicalUrl + "\n"
-                + timestamp + "\n"
-                + nonce + "\n"
+        return request.getRequestLine().getMethod() + "\n" + canonicalUrl + "\n" + timestamp + "\n" + nonce + "\n"
                 + body + "\n";
     }
 

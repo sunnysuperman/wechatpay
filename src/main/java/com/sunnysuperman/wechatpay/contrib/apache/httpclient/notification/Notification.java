@@ -27,15 +27,9 @@ public class Notification {
 
     @Override
     public String toString() {
-        return "Notification{" +
-                "id='" + id + '\'' +
-                ", createTime='" + createTime + '\'' +
-                ", eventType='" + eventType + '\'' +
-                ", resourceType='" + resourceType + '\'' +
-                ", decryptData='" + decryptData + '\'' +
-                ", summary='" + summary + '\'' +
-                ", resource=" + resource +
-                '}';
+        return "Notification{" + "id='" + id + '\'' + ", createTime='" + createTime + '\'' + ", eventType='" + eventType
+                + '\'' + ", resourceType='" + resourceType + '\'' + ", decryptData='" + decryptData + '\''
+                + ", summary='" + summary + '\'' + ", resource=" + resource + '}';
     }
 
     public String getId() {
@@ -106,13 +100,9 @@ public class Notification {
 
         @Override
         public String toString() {
-            return "Resource{" +
-                    "algorithm='" + algorithm + '\'' +
-                    ", ciphertext='" + ciphertext + '\'' +
-                    ", associatedData='" + associatedData + '\'' +
-                    ", nonce='" + nonce + '\'' +
-                    ", originalType='" + originalType + '\'' +
-                    '}';
+            return "Resource{" + "algorithm='" + algorithm + '\'' + ", ciphertext='" + ciphertext + '\''
+                    + ", associatedData='" + associatedData + '\'' + ", nonce='" + nonce + '\'' + ", originalType='"
+                    + originalType + '\'' + '}';
         }
     }
 

@@ -1,6 +1,5 @@
 package com.sunnysuperman.wechatpay.contrib.apache.httpclient.auth;
 
-
 import static com.sunnysuperman.wechatpay.contrib.apache.httpclient.constant.WechatPayHttpHeaders.REQUEST_ID;
 import static com.sunnysuperman.wechatpay.contrib.apache.httpclient.constant.WechatPayHttpHeaders.WECHAT_PAY_NONCE;
 import static com.sunnysuperman.wechatpay.contrib.apache.httpclient.constant.WechatPayHttpHeaders.WECHAT_PAY_SERIAL;
@@ -57,8 +56,8 @@ public class WechatPay2Validator implements Validator {
             String signature = response.getFirstHeader(WECHAT_PAY_SIGNATURE).getValue();
 
             if (!verifier.verify(serial, message.getBytes(StandardCharsets.UTF_8), signature)) {
-                throw verifyFail("serial=[%s] message=[%s] sign=[%s], request-id=[%s]",
-                        serial, message, signature, response.getFirstHeader(REQUEST_ID).getValue());
+                throw verifyFail("serial=[%s] message=[%s] sign=[%s], request-id=[%s]", serial, message, signature,
+                        response.getFirstHeader(REQUEST_ID).getValue());
             }
         } catch (IllegalArgumentException e) {
             log.warn(e.getMessage());
@@ -76,7 +75,7 @@ public class WechatPay2Validator implements Validator {
         String requestId = firstHeader.getValue();
 
         // NOTE: ensure HEADER_WECHAT_PAY_TIMESTAMP at last
-        String[] headers = {WECHAT_PAY_SERIAL, WECHAT_PAY_SIGNATURE, WECHAT_PAY_NONCE, WECHAT_PAY_TIMESTAMP};
+        String[] headers = { WECHAT_PAY_SERIAL, WECHAT_PAY_SIGNATURE, WECHAT_PAY_NONCE, WECHAT_PAY_TIMESTAMP };
 
         Header header = null;
         for (String headerName : headers) {
@@ -102,9 +101,7 @@ public class WechatPay2Validator implements Validator {
         String timestamp = response.getFirstHeader(WECHAT_PAY_TIMESTAMP).getValue();
         String nonce = response.getFirstHeader(WECHAT_PAY_NONCE).getValue();
         String body = getResponseBody(response);
-        return timestamp + "\n"
-                + nonce + "\n"
-                + body + "\n";
+        return timestamp + "\n" + nonce + "\n" + body + "\n";
     }
 
     protected final String getResponseBody(CloseableHttpResponse response) throws IOException {

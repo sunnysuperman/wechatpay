@@ -128,12 +128,18 @@ public class CertificatesManager {
     /**
      * 增加需要自动更新平台证书的商户信息
      *
-     * @param merchantId 商户号
-     * @param credentials 认证器
-     * @param apiV3Key APIv3密钥
-     * @throws IOException IO错误
-     * @throws GeneralSecurityException 通用安全错误
-     * @throws HttpCodeException HttpCode错误
+     * @param merchantId
+     *            商户号
+     * @param credentials
+     *            认证器
+     * @param apiV3Key
+     *            APIv3密钥
+     * @throws IOException
+     *             IO错误
+     * @throws GeneralSecurityException
+     *             通用安全错误
+     * @throws HttpCodeException
+     *             HttpCode错误
      */
     public synchronized void putMerchant(String merchantId, Credentials credentials, byte[] apiV3Key)
             throws IOException, GeneralSecurityException, HttpCodeException {
@@ -172,8 +178,7 @@ public class CertificatesManager {
         }
     }
 
-    private X509Certificate getLatestCertificate(String merchantId)
-            throws NotFoundException {
+    private X509Certificate getLatestCertificate(String merchantId) throws NotFoundException {
         if (merchantId == null || merchantId.isEmpty()) {
             throw new IllegalArgumentException("merchantId为空");
         }
@@ -200,9 +205,11 @@ public class CertificatesManager {
     /**
      * 获取商户号为merchantId的验签器
      *
-     * @param merchantId 商户号
+     * @param merchantId
+     *            商户号
      * @return 验签器
-     * @throws NotFoundException merchantId/merchantCertificates/apiV3Key/credentials为空
+     * @throws NotFoundException
+     *             merchantId/merchantCertificates/apiV3Key/credentials为空
      */
     public Verifier getVerifier(String merchantId) throws NotFoundException {
         // 若商户信息不存在，返回错误
@@ -225,7 +232,6 @@ public class CertificatesManager {
         return new DefaultVerifier(merchantId);
     }
 
-
     private void beginScheduleUpdate() {
         executor = new SafeSingleScheduleExecutor();
         Runnable runnable = () -> {
@@ -244,21 +250,25 @@ public class CertificatesManager {
     /**
      * 下载和更新平台证书
      *
-     * @param merchantId 商户号
-     * @param verifier 验签器
-     * @param credentials 认证器
-     * @param apiV3Key apiv3密钥
-     * @throws HttpCodeException Http返回码异常
-     * @throws IOException IO异常
-     * @throws GeneralSecurityException 通用安全性异常
+     * @param merchantId
+     *            商户号
+     * @param verifier
+     *            验签器
+     * @param credentials
+     *            认证器
+     * @param apiV3Key
+     *            apiv3密钥
+     * @throws HttpCodeException
+     *             Http返回码异常
+     * @throws IOException
+     *             IO异常
+     * @throws GeneralSecurityException
+     *             通用安全性异常
      */
     private synchronized void downloadAndUpdateCert(String merchantId, Verifier verifier, Credentials credentials,
             byte[] apiV3Key) throws HttpCodeException, IOException, GeneralSecurityException {
-        try (CloseableHttpClient httpClient = WechatPayHttpClientBuilder.create()
-                .withCredentials(credentials)
-                .withValidator(verifier == null ? (response) -> true
-                        : new WechatPay2Validator(verifier))
-                .build()) {
+        try (CloseableHttpClient httpClient = WechatPayHttpClientBuilder.create().withCredentials(credentials)
+                .withValidator(verifier == null ? (response) -> true : new WechatPay2Validator(verifier)).build()) {
             HttpGet httpGet = new HttpGet(CERT_DOWNLOAD_PATH);
             httpGet.addHeader(ACCEPT, APPLICATION_JSON.toString());
             try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
@@ -284,12 +294,18 @@ public class CertificatesManager {
     /**
      * 初始化平台证书，商户信息第一次被添加时调用
      *
-     * @param merchantId 商户号
-     * @param credentials 认证器
-     * @param apiV3Key apiv3密钥
-     * @throws HttpCodeException Http返回码异常
-     * @throws IOException IO异常
-     * @throws GeneralSecurityException 通用安全性异常
+     * @param merchantId
+     *            商户号
+     * @param credentials
+     *            认证器
+     * @param apiV3Key
+     *            apiv3密钥
+     * @throws HttpCodeException
+     *             Http返回码异常
+     * @throws IOException
+     *             IO异常
+     * @throws GeneralSecurityException
+     *             通用安全性异常
      */
     private void initCertificates(String merchantId, Credentials credentials, byte[] apiV3Key)
             throws HttpCodeException, IOException, GeneralSecurityException {

@@ -25,11 +25,8 @@ public class WechatPayHttpClientBuilder extends HttpClientBuilder {
     private WechatPayHttpClientBuilder() {
         super();
 
-        String userAgent = String.format(
-                "WechatPay-Apache-HttpClient/%s (%s) Java/%s",
-                getClass().getPackage().getImplementationVersion(),
-                OS,
-                VERSION == null ? "Unknown" : VERSION);
+        String userAgent = String.format("WechatPay-Apache-HttpClient/%s (%s) Java/%s",
+                getClass().getPackage().getImplementationVersion(), OS, VERSION == null ? "Unknown" : VERSION);
         setUserAgent(userAgent);
     }
 

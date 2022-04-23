@@ -21,9 +21,7 @@ import java.util.Base64;
 public class PemUtil {
 
     public static PrivateKey loadPrivateKey(String privateKey) {
-        privateKey = privateKey
-                .replace("-----BEGIN PRIVATE KEY-----", "")
-                .replace("-----END PRIVATE KEY-----", "")
+        privateKey = privateKey.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "")
                 .replaceAll("\\s+", "");
 
         try {
@@ -42,7 +40,7 @@ public class PemUtil {
         byte[] buffer = new byte[1024];
         String privateKey;
         try {
-            for (int length; (length = inputStream.read(buffer)) != -1; ) {
+            for (int length; (length = inputStream.read(buffer)) != -1;) {
                 os.write(buffer, 0, length);
             }
             privateKey = os.toString("UTF-8");

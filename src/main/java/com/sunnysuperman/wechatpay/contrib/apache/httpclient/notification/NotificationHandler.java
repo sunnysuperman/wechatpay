@@ -1,6 +1,5 @@
 package com.sunnysuperman.wechatpay.contrib.apache.httpclient.notification;
 
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.sunnysuperman.wechatpay.contrib.apache.httpclient.auth.Verifier;
@@ -22,27 +21,29 @@ public class NotificationHandler {
     private final byte[] apiV3Key;
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-public NotificationHandler(Verifier verifier, byte[] apiV3Key) {
-    if (verifier == null) {
-        throw new IllegalArgumentException("verifier为空");
+    public NotificationHandler(Verifier verifier, byte[] apiV3Key) {
+        if (verifier == null) {
+            throw new IllegalArgumentException("verifier为空");
+        }
+        if (apiV3Key == null || apiV3Key.length == 0) {
+            throw new IllegalArgumentException("apiV3Key为空");
+        }
+        this.verifier = verifier;
+        this.apiV3Key = apiV3Key;
     }
-    if (apiV3Key == null || apiV3Key.length == 0) {
-        throw new IllegalArgumentException("apiV3Key为空");
-    }
-    this.verifier = verifier;
-    this.apiV3Key = apiV3Key;
-}
 
     /**
      * 解析微信支付通知请求结果
      *
-     * @param request 微信支付通知请求
+     * @param request
+     *            微信支付通知请求
      * @return 微信支付通知报文解密结果
-     * @throws ValidationException 1.输入参数不合法 2.参数被篡改导致验签失败 3.请求和验证的平台证书不一致导致验签失败
-     * @throws ParseException 1.解析请求体为Json失败 2.请求体无对应参数 3.AES解密失败
+     * @throws ValidationException
+     *             1.输入参数不合法 2.参数被篡改导致验签失败 3.请求和验证的平台证书不一致导致验签失败
+     * @throws ParseException
+     *             1.解析请求体为Json失败 2.请求体无对应参数 3.AES解密失败
      */
-    public Notification parse(Request request)
-            throws ValidationException, ParseException {
+    public Notification parse(Request request) throws ValidationException, ParseException {
         // 验签
         validate(request);
         // 解析请求体
@@ -66,8 +67,8 @@ public NotificationHandler(Verifier verifier, byte[] apiV3Key) {
             throw new ValidationException("signature为空");
         }
         if (!verifier.verify(serialNumber, message, signature)) {
-            String errorMessage = String
-                    .format("验签失败：serial=[%s] message=[%s] sign=[%s]", serialNumber, new String(message), signature);
+            String errorMessage = String.format("验签失败：serial=[%s] message=[%s] sign=[%s]", serialNumber,
+                    new String(message), signature);
             throw new ValidationException(errorMessage);
         }
     }
@@ -75,9 +76,11 @@ public NotificationHandler(Verifier verifier, byte[] apiV3Key) {
     /**
      * 解析请求体
      *
-     * @param body 请求体
+     * @param body
+     *            请求体
      * @return 解析结果
-     * @throws ParseException 解析body失败
+     * @throws ParseException
+     *             解析body失败
      */
     private Notification parseBody(String body) throws ParseException {
         ObjectReader objectReader = objectMapper.reader();
@@ -95,8 +98,10 @@ public NotificationHandler(Verifier verifier, byte[] apiV3Key) {
     /**
      * 校验解析后的通知结果
      *
-     * @param notification 通知结果
-     * @throws ParseException 参数不合法
+     * @param notification
+     *            通知结果
+     * @throws ParseException
+     *             参数不合法
      */
     private void validateNotification(Notification notification) throws ParseException {
         if (notification == null) {
@@ -147,8 +152,10 @@ public NotificationHandler(Verifier verifier, byte[] apiV3Key) {
     /**
      * 获取解密数据
      *
-     * @param notification 解析body得到的通知结果
-     * @throws ParseException 解析body失败
+     * @param notification
+     *            解析body得到的通知结果
+     * @throws ParseException
+     *             解析body失败
      */
     private void setDecryptData(Notification notification) throws ParseException {
 
