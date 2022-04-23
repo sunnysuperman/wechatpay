@@ -228,8 +228,8 @@ public class WechatPayApiV3 {
 
     public PayNotification decodePayNotification(String body, Map<String, String> headers) throws WechatPayException {
         NotificationRequest request = new NotificationRequest.Builder()
-                .withSerialNumber(headers.get("Wechatpay-Serial")).withNonce(headers.get("Wechatpay-Nonce"))
-                .withTimestamp(headers.get("Wechatpay-Timestamp")).withSignature(headers.get("Wechatpay-Signature"))
+                .withSerialNumber(headers.get("wechatpay-serial")).withNonce(headers.get("wechatpay-nonce"))
+                .withTimestamp(headers.get("wechatpay-timestamp")).withSignature(headers.get("wechatpay-signature"))
                 .withBody(body).build();
         NotificationHandler handler = new NotificationHandler(new DefaultVerifier(),
                 apiV3Key.getBytes(StandardCharsets.UTF_8));

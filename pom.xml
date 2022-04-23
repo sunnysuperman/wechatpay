@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.sunnysuperman</groupId>
 	<artifactId>wechatpay</artifactId>
-	<version>0.1.2</version>
+	<version>0.1.3</version>
 	<packaging>jar</packaging>
 	<name>wechatpay</name>
 	<url>http://maven.apache.org</url>
