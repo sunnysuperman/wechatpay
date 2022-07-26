@@ -15,6 +15,11 @@ import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.Map;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -39,8 +44,11 @@ import com.sunnysuperman.wechatpay.data.MakeH5PayUrlResponse;
 import com.sunnysuperman.wechatpay.data.MakeNativePayUrlResponse;
 import com.sunnysuperman.wechatpay.data.MakePayUrlRequest;
 import com.sunnysuperman.wechatpay.data.PayNotification;
+import com.sunnysuperman.wechatpay.data.QueryTransferDetailResponse;
 import com.sunnysuperman.wechatpay.data.RefundRequest;
 import com.sunnysuperman.wechatpay.data.RefundResponse;
+import com.sunnysuperman.wechatpay.data.TransferRequestV3;
+import com.sunnysuperman.wechatpay.data.TransferResponseV3;
 
 public class WechatPayApiV3 {
     private static final Logger LOG = LoggerFactory.getLogger(WechatPayApiV3.class);
@@ -93,13 +101,19 @@ public class WechatPayApiV3 {
         }
     }
 
-    private <T> T postJSON(String url, Object request, Class<T> responseClass) throws WechatPayException {
+    private <T> T postJSON(String url, Object request, BigInteger wechatpaySerial, Class<T> responseClass)
+            throws WechatPayException {
         CloseableHttpClient client = getClient();
         try {
             String requestAsString = JSONUtil.toJSONString(request);
             HttpPost httpPost = new HttpPost(url);
             httpPost.addHeader("Accept", "application/json");
             httpPost.addHeader("Content-type", "application/json; charset=utf-8");
+
+            if (wechatpaySerial != null) {
+                httpPost.setHeader("wechatpay-serial", wechatpaySerial.toString(16));
+            }
+
             httpPost.setEntity(new StringEntity(requestAsString, StandardCharsets.UTF_8));
             CloseableHttpResponse response = client.execute(httpPost);
             wrapResponse(response);
@@ -116,6 +130,10 @@ public class WechatPayApiV3 {
         } finally {
             close(client);
         }
+    }
+
+    private <T> T postJSON(String url, Object request, Class<T> responseClass) throws WechatPayException {
+        return postJSON(url, request, null, responseClass);
     }
 
     private void wrapResponse(CloseableHttpResponse response) throws WechatPayException {
@@ -215,6 +233,48 @@ public class WechatPayApiV3 {
         }
     }
 
+    private class DefaultEncryptor {
+
+        private final BigInteger serialNum;
+        private final X509Certificate certificate;
+
+        public DefaultEncryptor() {
+            Map<BigInteger, X509Certificate> merchantCertificates;
+            try {
+                merchantCertificates = downloadCert();
+            } catch (Exception ex) {
+                throw new RuntimeException("下载证书失败");
+            }
+            if (merchantCertificates.isEmpty()) {
+                throw new RuntimeException("下载证书为空");
+            }
+            Map.Entry<BigInteger, X509Certificate> item = merchantCertificates.entrySet().iterator().next();
+            serialNum = item.getKey();
+            certificate = item.getValue();
+        }
+
+        public String encrypt(String message) {
+            try {
+                Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-1AndMGF1Padding");
+                cipher.init(Cipher.ENCRYPT_MODE, certificate.getPublicKey());
+
+                byte[] data = message.getBytes(StandardCharsets.UTF_8);
+                byte[] cipherdata = cipher.doFinal(data);
+                return Base64.getEncoder().encodeToString(cipherdata);
+            } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+                throw new RuntimeException("当前Java环境不支持RSA v1.5/OAEP", e);
+            } catch (InvalidKeyException e) {
+                throw new RuntimeException("敏感信息加密异常: 无效的证书");
+            } catch (IllegalBlockSizeException | BadPaddingException e) {
+                throw new RuntimeException("敏感信息加密失败，加密原串的长度不能超过214字节");
+            }
+        }
+
+        public BigInteger getSerialNum() {
+            return serialNum;
+        }
+    }
+
     public MakeH5PayUrlResponse makeH5PayUrl(MakePayUrlRequest request) throws WechatPayException {
         request.setMchid(merchantId);
         return postJSON("https://api.mch.weixin.qq.com/v3/pay/transactions/h5", request, MakeH5PayUrlResponse.class);
@@ -249,5 +309,37 @@ public class WechatPayApiV3 {
 
     public RefundResponse queryRefund(String outRefundNo) throws WechatPayException {
         return get("https://api.mch.weixin.qq.com/v3/refund/domestic/refunds/" + outRefundNo, RefundResponse.class);
+    }
+
+    public TransferResponseV3 transfer(TransferRequestV3 request) throws WechatPayException {
+        DefaultEncryptor encryptor = null;
+        boolean hasUserName = false;
+        for (TransferRequestV3.TransferDetail detail : request.getTransfer_detail_list()) {
+            String userName = detail.getUser_name();
+            if (userName == null) {
+                continue;
+            }
+            if (!hasUserName && userName.length() == 0) {
+                detail.setUser_name(null);
+                continue;
+            }
+            if (!hasUserName) {
+                hasUserName = true;
+                encryptor = new DefaultEncryptor();
+            }
+            if (userName.length() == 0) {
+                throw new RuntimeException("商户号转账的微信零钱失败，用户姓名不能为空");
+            }
+            detail.setUser_name(encryptor.encrypt(userName));
+        }
+        return postJSON("https://api.mch.weixin.qq.com/v3/transfer/batches", request,
+                encryptor == null ? null : encryptor.getSerialNum(), TransferResponseV3.class);
+    }
+
+    public QueryTransferDetailResponse queryTransferDetailByOutBatchNo(String outBatchNo, String outDetailNo)
+            throws WechatPayException {
+        String url = "https://api.mch.weixin.qq.com/v3/transfer/batches/out-batch-no/" + outBatchNo
+                + "/details/out-detail-no/" + outDetailNo;
+        return get(url, QueryTransferDetailResponse.class);
     }
 }
